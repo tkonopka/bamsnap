@@ -577,15 +577,12 @@ class ReferenceSequence():
         return refseq
 
     def get_refseq_from_localfasta(self, pos1):
-        spos = pos1['g_spos']-self.opt['margin'] - 500
-        epos = pos1['g_epos']+self.opt['margin'] + 1 + 500
+        spos = max(1, pos1['g_spos'])
+        epos = pos1['g_epos']
         seq = self.get_refseq_from_fasta(pos1['chrom'], spos, epos, self.opt['ref_index_rebuild'])
-        i = 0
-        refseq = {}
-        for gpos in range(spos, epos):
-            refseq[gpos+1] = seq[i]
-            i += 1
-        return refseq
+        # the seq string is expected to have length (epos-spos+1). However,
+        # actual strings may be shorter if epos falls outside the chromosome
+        return {spos+i: v for i, v in enumerate(seq)}
 
     def get_refseq_from_fasta(self, chrom, spos, epos, rebuild_index=False):
         f = self.fasta
@@ -594,5 +591,6 @@ class ReferenceSequence():
             arr = c1.split(' ')
             tchrom = arr[0]
             fastachrommap[tchrom] = c1
-        refseq = f[fastachrommap[chrom]][spos:epos+1]
+        # this assumes that spos and epos are 1-based coordinates, like in VCF
+        refseq = f[fastachrommap[chrom]][(spos-1):epos]
         return str(refseq)

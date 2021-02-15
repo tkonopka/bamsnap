@@ -169,6 +169,9 @@ class DrawReadSet():
         else:
             self.samAlign = pysam.AlignmentFile(bam.filename, bam.getSamfileFlags())
         self.chrom = chrom
+        # the length of the chrom is needed to avoid out-of-bounds read fetching
+        chrom_index = self.samAlign.references.index(chrom)
+        self.chrom_len = self.samAlign.lengths[chrom_index]
         self.refseq = refseq
         self.g_spos = g_spos
         self.g_epos = g_epos
@@ -287,7 +290,6 @@ class DrawReadSet():
                 self.refseq[gpos]
             except KeyError:
                 self.refseq[gpos] = base.upper()
-        
 
     def calculate_readmap(self, is_strand_group=False):
         group_list = ['all']
@@ -296,8 +298,9 @@ class DrawReadSet():
 
         for group in group_list:
             self.max_cov[group] = 0
-
-        for a in self.samAlign.fetch(self.chrom, self.g_spos-self.read_gap_w-500, self.g_epos+500):
+        sam_spos = max(1, self.g_spos - self.read_gap_w - 500)
+        sam_epos = min(self.chrom_len, self.g_epos + 500)
+        for a in self.samAlign.fetch(self.chrom, sam_spos, sam_epos):
             if len(a.positions) > 0:
                 rid = self.get_rid(a)
                 self.update_ref_seq_with_read(a)
@@ -358,8 +361,6 @@ class DrawReadSet():
                 r.xscale = self.xscale
                 r.read_thickness = self.read_thickness
                 r.draw(dr, col1, readcolorby)
-
-    
 
     def is_OK(self, base_composition, ref):
         flag = False

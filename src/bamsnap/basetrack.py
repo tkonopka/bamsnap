@@ -8,7 +8,7 @@ class BaseTrack():
     def __init__(self, chrom, spos, epos, refseq, xscale, w):
         self.chrom = chrom
         self.nchrom = chrom.replace('chr', '')
-        self.spos = spos
+        self.spos = max(1, spos)
         self.epos = epos
         self.w = w
         self.h = 0
@@ -37,6 +37,8 @@ class BaseTrack():
         vcls = ""
         for i in range(self.g_len):
             posi = self.spos + i
+            if posi not in self.refseq:
+                continue
             base = self.refseq[posi]
             # x1 = int(i * self.scale_x) + int(self.scale_x/2) - int(fontsize[0]/2)
             x1 = self.xscale.xmap[posi]['spos']
