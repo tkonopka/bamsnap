@@ -8,7 +8,7 @@ class Xscale():
         self.epos = epos
         self.w = w
         self.scale_x = get_scale(spos, epos, w)
-        self.base_width = int(w / abs(epos - spos))
+        self.base_width = int(w / abs(epos - spos + 1))
         if self.base_width < 1:
             self.base_width = 1
         self.set_xmap()

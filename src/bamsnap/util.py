@@ -28,7 +28,7 @@ def add_dict_value(dict1, key1, add_vale=1):
     return dict1
 
 def get_scale(x1, x2, width):
-    scale = 1.0 * width / abs(x2 - x1)
+    scale = 1.0 * width / abs(x2 - x1 + 1)
     return scale
 
 def getrgb(hexcode, whitening=0):
