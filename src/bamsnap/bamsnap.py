@@ -552,29 +552,21 @@ class ReferenceSequence():
     #         i += 1
 
     def get_refseq_from_ucsc(self, pos1):
-        spos = pos1['g_spos']-self.opt['margin'] - 500
-        epos = pos1['g_epos']+self.opt['margin'] + 1 + 500
-        # seqver = "hg38"
+        spos = max(1, pos1['g_spos'])
+        epos = pos1['g_epos']
         seqver = self.opt['refversion']
         if not pos1['chrom'].startswith('chr'):
             chrom = 'chr' + pos1['chrom']
         else:
             chrom = pos1['chrom']
         url = "http://genome.ucsc.edu/cgi-bin/das/" + seqver + \
-            "/dna?segment=" + chrom + ":" + str(spos) + "," + str(epos)
-        # url = "http://genome.ucsc.edu/cgi-bin/das/" + seqver + \
-        #     "/dna?segment=chr"+pos1['chrom']+":"+str(spos+1)+","+str(epos+1)
+              "/dna?segment=" + chrom + ":" + str(spos) + "," + str(epos)
         cont = get_url(url)
         seq = ""
         for line in cont.strip().split('\n'):
             if line[0] != '<':
                 seq += line.strip().upper()
-        i = 0
-        refseq = {}
-        for gpos in range(spos, epos):
-            refseq[gpos] = seq[i]
-            i += 1
-        return refseq
+        return {spos+i: v for i, v in enumerate(seq)}
 
     def get_refseq_from_localfasta(self, pos1):
         spos = max(1, pos1['g_spos'])
